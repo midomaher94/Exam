@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Exam System — Black Horse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#051027; --bg2:#071a3a; --card: rgba(255,255,255,0.04);
+      --accent:#7cc1ff; --accent-2:#6ae1c1; --glass: rgba(255,255,255,0.03);
+      --text:#ffffff; /* clearer text */
+      --muted:#9fb2d6; --success:#39d98a; --danger:#ff6b6b;
+      --option-bg: rgba(255,255,255,0.03);
+      --option-border: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    html,body{height:100%;margin:0}
+    body{
+      background: radial-gradient(circle at 10% 10%, rgba(124,193,255,0.03), transparent 8%),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:var(--text);display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+    .frame{
+      width:100%;max-width:980px;border-radius:18px;padding:20px;backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03); box-shadow: 0 12px 40px rgba(2,6,23,0.7);
+    }
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#a6e1ff);display:grid;place-items:center;color:#042022;font-weight:800}
+    h1{margin:0;font-size:20px}
+    .muted{color:var(--muted);font-size:13px}
+    .start-card{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:18px}
+    .card{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.02)}
+    label{display:block;margin-bottom:8px;font-weight:700;color:var(--text)}
+    input[type="text"],select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);outline:none}
+    textarea{min-height:120px}
+    .btn{background:linear-gradient(90deg,var(--accent),#9be6ff);border:none;padding:10px 16px;border-radius:10px;color:#041623;font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(124,193,255,0.06)}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)}
+    .start-cta{display:flex;gap:10px;align-items:center;margin-top:12px}
+    .hidden{display:none}
+    .progress-bar{height:12px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;margin-bottom:12px}
+    .progress-bar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .45s ease}
+    .quiz-grid{display:flex;gap:16px}
+    .left{flex:1}
+    .right{width:320px}
+    .question-card{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02);min-height:220px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+    .q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .q-title{font-weight:800;font-size:18px;margin-bottom:8px;color:var(--text)}
+    .options{display:flex;flex-direction:column;gap:10px}
+    .option{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:var(--option-bg);cursor:pointer;border:1px solid var(--option-border);transition:transform .12s,box-shadow .12s}
+    .option:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(2,6,23,0.35)}
+    .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    .timer-card{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px;border-radius:12px}
+    .svg-wrap{transform:rotate(-90deg)}
+    .time-text{font-weight:800;font-size:20px;color:var(--text)}
+    .result-wrap{display:grid;grid-template-columns:1fr;gap:12px}
+    .result-card{padding:18px;border-radius:12px;color:#053228;background:linear-gradient(180deg, rgba(126,227,166,0.08), rgba(255,255,255,0.01));border:1px solid rgba(126,227,166,0.08)}
+    .answers-list{margin-top:8px}
+    .ans-row{display:flex;justify-content:space-between;gap:12px;padding:12px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02)}
+    .ans-row .left{flex:1;color:var(--text)}
+    .ans-row.correct{background:rgba(57,217,138,0.06);border:1px solid rgba(57,217,138,0.12)}
+    .ans-row.wrong{background:rgba(255,107,107,0.04);border:1px solid rgba(255,107,107,0.08)}
+    .manual{background:rgba(255,206,84,0.06);border:1px solid rgba(255,206,84,0.12)}
+    .fade-in{animation:fadeIn .45s ease both}
+    .section-title{font-weight:800;margin:8px 0;color:var(--accent)}
+    .small-muted{font-size:13px;color:var(--muted)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width:980px){
+      .start-card{grid-template-columns:1fr}
+      .quiz-grid{flex-direction:column}
+      .right{width:100%}
+    }
+
+    /* inputs for match / small inputs */
+    .inline-input{display:inline-block;width:auto;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);min-width:80px}
+    .label-muted{font-weight:700;color:var(--muted);margin-bottom:6px;display:block}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <header>
+      <div class="brand">
+        <div class="logo">BH</div>
+        <div>
+          <h1>Student Exam System — Black Horse</h1>
+          <div class="muted"> • One question at a time • 1 minute per question • Total 45 minutes</div>
+        </div>
+      </div>
+      <div class="muted">Ready ✓</div>
+    </header>
+
+    <!-- START -->
+    <div class="start-card card" id="startScreen">
+      <div>
+        <label>Student name</label>
+        <input id="studentName" type="text" placeholder="e.g. Ahmed Mohamed" />
+        <label style="margin-top:10px">Select level</label>
+        <select id="levelSelect">
+          <option>Level 1</option>
+        </select>
+        <div class="start-cta">
+          <button class="btn" id="startBtn">🚀 Start Exam</button>
+          <button class="btn ghost" id="demoBtn">Demo</button>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:13px">
+          Instructions: One question appears at a time. 1 minute per question. Some items require manual grading (not auto-graded).
+        </div>
+      </div>
+      <div class="card">
+        <div class="small-muted">Test Paper</div>
+        <h3 style="margin:8px 0 2px">Level One Test</h3>
+        <div class="small-muted">Time Allowed: 45 minutes • Total Marks: 25</div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+        <div class="small-muted">Sections: A (Vocabulary & Grammar), B (Grammar), C (Reading), D (Writing)</div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quizArea" class="hidden">
+      <div class="progress-bar"><i id="progFill"></i></div>
+      <div class="quiz-grid">
+        <div class="left">
+          <div class="question-card fade-in" id="questionCard">
+            <div>
+              <div class="q-meta">
+                <div class="muted">Question <span id="qIndex">1</span> / <span id="qTotal">1</span></div>
+                <div class="muted" id="overallLabel">Remaining: <span id="overallTime">45:00</span></div>
+              </div>
+              <div class="q-title" id="qTitle">Title</div>
+              <div class="small-muted" id="qMarks"></div>
+              <div class="muted" id="qBody" style="margin-bottom:12px"></div>
+              <div class="options" id="optionsContainer"></div>
+            </div>
+
+            <div class="controls">
+              <button class="btn ghost" id="prevBtn">◀ Previous</button>
+              <div style="display:flex;gap:8px">
+                <button class="btn ghost" id="saveDraft">💾 Save Draft</button>
+                <button class="btn" id="nextBtn">Next ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="card timer-card">
+            <div style="width:150px;height:150px;position:relative">
+              <svg class="svg-wrap" width="150" height="150" viewBox="0 0 100 100">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#7cc1ff"/><stop offset="1" stop-color="#6ae1c1"/></linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.06)" stroke-width="10" fill="none"></circle>
+                <circle id="timerCircle" cx="50" cy="50" r="42" stroke="url(#g1)" stroke-width="10" stroke-linecap="round" fill="none" stroke-dasharray="263.894" stroke-dashoffset="0"></circle>
+              </svg>
+              <div style="position:absolute;left:0;right:0;top:45px;text-align:center">
+                <div class="time-text" id="timeText">--:--</div>
+                <div class="muted" style="font-size:13px">Time left for this question</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;text-align:center">
+              <div class="muted">Student: <span id="studentInfo">—</span></div>
+              <div style="margin-top:8px"><button class="btn ghost" id="endNow">End Now</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultsScreen" class="hidden">
+      <h2>Final Result</h2>
+      <div id="scoreSummary" class="card" style="margin-bottom:12px;padding:14px"></div>
+      <div class="result-wrap" id="resultCards"></div>
+    </div>
+  </div>
+
+  <script>
+    // ====== QUESTIONS (from your test paper, English) ======
+    // Each question object:
+    // type: "group" (multiple sub-items), "text" (single input), "textarea" (open writing), "match" (dropdown), "mcq"
+    // marks: total marks for that question
+    // correct keys included for auto-grading where possible
+    const questions = [
+      // Section A - Vocabulary
+      { id: "A1", section: "A", title: "A1. Write the numbers in words. (2 marks)\nExample: 4 – four", marks:2, type:"group", items:[
+          {sub:"a) 7", key:"seven", type:"text", marks:1},
+          {sub:"b) 9", key:"nine", type:"text", marks:1},
+        ], auto:true },
+      { id: "A2", section: "A", title: "A2. Match the opposites. (3 marks)", marks:3, type:"match", items:[
+          {sub:"a) begin", options:["left","answer","end"], keyIndex:2, marks:1},
+          {sub:"b) right", options:["left","answer","end"], keyIndex:0, marks:1},
+          {sub:"c) ask", options:["left","answer","end"], keyIndex:1, marks:1},
+        ], auto:true },
+      { id: "A3", section: "A", title: "A3. Make these nouns plural. (2 marks)", marks:2, type:"group", items:[
+          {sub:"a) class", key:"classes", type:"text", marks:1},
+          {sub:"b) secretary", key:"secretaries", type:"text", marks:1},
+        ], auto:true },
+
+      // Section B - Grammar
+      { id:"B4", section:"B", title:"B4. Find and circle the correct word. (2 marks)", marks:2, type:"group", items:[
+          {sub:"a) He (is / are) a student.", options:["is","are"], keyIndex:0, marks:0.5, type:"mcq"},
+          {sub:"b) I work (in / on) a hospital.", options:["in","on"], keyIndex:0, marks:0.5, type:"mcq"},
+          {sub:"c) She wants a (jobs / job).", options:["jobs","job"], keyIndex:1, marks:0.5, type:"mcq"},
+          {sub:"d) They (comes / come) from Egypt.", options:["comes","come"], keyIndex:1, marks:0.5, type:"mcq"},
+        ], auto:true },
+      { id:"B5", section:"B", title:"B5. Make the words into a question. (1 mark)", marks:1, type:"group", items:[
+          {sub:"a) you / are / student / a / ?", key:"Are you a student?", type:"text", marks:0.5},
+          {sub:"b) your / what / is / name / ?", key:"What is your name?", type:"text", marks:0.5},
+        ], auto:true },
+      { id:"B6", section:"B", title:"B6. Write two words for each category. (1 mark)", marks:1, type:"group", items:[
+          {sub:"a) Country:", key:["Egypt","Italy"], type:"textpair", marks:0.5},
+          {sub:"b) Colour:", key:["red","blue"], type:"textpair", marks:0.5},
+        ], auto:false /* manual or loose matching */ },
+
+      // Section C - Reading
+      { id:"C1", section:"C", title:"C1. Read the text and complete the table. (4 marks)\nHello. I’m Mario. Mario Dionisi. I’m Italian. I’m from Rome.", marks:4, type:"group", items:[
+          {sub:"Name:", key:"Mario", type:"text", marks:1},
+          {sub:"Family Name:", key:"Dionisi", type:"text", marks:1},
+          {sub:"Nationality:", key:"Italian", type:"text", marks:1},
+          {sub:"Hometown:", key:"Rome", type:"text", marks:1},
+        ], auto:true },
+      { id:"C2", section:"C", title:"C2. Read then answer the questions. (4 marks)\nGreenhill College – English classes are in Room 5 on Mondays.", marks:4, type:"group", items:[
+          {sub:"a) What is the name of the school?", key:"Greenhill College", type:"text", marks:2},
+          {sub:"b) What room is English in on Mondays?", key:"Room 5", type:"text", marks:2},
+        ], auto:true },
+
+      // Section D - Writing
+      { id:"D3", section:"D", title:"D3. Write four sentences about you. (4 marks)", marks:4, type:"textarea", note:"Manual grading required", auto:false },
+      { id:"D4", section:"D", title:"D4. Complete the sentences with a suitable word. (2 marks)", marks:2, type:"group", items:[
+          {sub:"a) January, March, ___", key:"May", type:"text", marks:0.5},
+          {sub:"b) Monday, Tuesday, ___", key:"Wednesday", type:"text", marks:0.5},
+          {sub:"c) Spanish, Chinese, ___", key:"French", type:"text", marks:0.5},
+          {sub:"d) Listen, speak, ___", key:"write", type:"text", marks:0.5},
+        ], auto:true },
+    ];
+
+    // ====== State ======
+    let student = { name:"", level:"", answers:[], timePerQuestion:60 };
+    let currentQ = 0;
+    let perQTimer = null;
+    let perQRemaining = student.timePerQuestion;
+    const totalAllowed = 45*60; // 45 minutes total
+    let overallRemaining = totalAllowed;
+    let overallTimer = null;
+
+    // Elements
+    const startScreen=document.getElementById("startScreen");
+    const quizArea=document.getElementById("quizArea");
+    const resultsScreen=document.getElementById("resultsScreen");
+    const studentNameInput=document.getElementById("studentName");
+    const levelSelect=document.getElementById("levelSelect");
+    const startBtn=document.getElementById("startBtn");
+    const demoBtn=document.getElementById("demoBtn");
+    const qTitle=document.getElementById("qTitle");
+    const qBody=document.getElementById("qBody");
+    const optionsContainer=document.getElementById("optionsContainer");
+    const qIndex=document.getElementById("qIndex");
+    const qTotal=document.getElementById("qTotal");
+    const progFill=document.getElementById("progFill");
+    const timeText=document.getElementById("timeText");
+    const studentInfo=document.getElementById("studentInfo");
+    const prevBtn=document.getElementById("prevBtn");
+    const nextBtn=document.getElementById("nextBtn");
+    const saveDraft=document.getElementById("saveDraft");
+    const endNow=document.getElementById("endNow");
+    const resultCards=document.getElementById("resultCards");
+    const overallTimeLabel=document.getElementById("overallTime");
+    const qMarks=document.getElementById("qMarks");
+    const demoBtnEl = document.getElementById("demoBtn");
+    const startBtnEl = document.getElementById("startBtn");
+
+    // Init qTotal
+    qTotal.innerText = questions.length;
+
+    // Start quiz
+    function startQuiz(){
+      const name = studentNameInput.value.trim();
+      if(!name){ alert("Please enter student name"); return; }
+      student.name = name;
+      student.level = levelSelect.value;
+      // init answers structure
+      student.answers = questions.map(q => {
+        if(q.type==="group") return q.items.map(()=>null);
+        if(q.type==="textarea") return "";
+        if(q.type==="match") return q.items.map(()=>null);
+        return null;
+      });
+      studentInfo.innerText = `${student.name} (${student.level})`;
+      startScreen.classList.add("hidden");
+      quizArea.classList.remove("hidden");
+      qIndex.innerText = currentQ+1;
+      showQuestion();
+      // start overall timer
+      overallRemaining = totalAllowed;
+      overallTimer = setInterval(()=>{
+        overallRemaining--;
+        const mm = Math.floor(overallRemaining/60).toString().padStart(2,"0");
+        const ss = (overallRemaining%60).toString().padStart(2,"0");
+        overallTimeLabel.innerText = `${mm}:${ss}`;
+        if(overallRemaining<=0){
+          clearInterval(overallTimer);
+          finishQuiz();
+        }
+      },1000);
+    }
+
+    // Show a question (one per slide)
+    function showQuestion(){
+      clearInterval(perQTimer);
+      perQRemaining = student.timePerQuestion;
+      updatePerQDisplay();
+      qIndex.innerText = currentQ+1;
+      progFill.style.width = ((currentQ)/questions.length*100)+"%";
+
+      const q = questions[currentQ];
+      qTitle.innerText = `${q.section} - ${q.title}`;
+      qMarks.innerText = `Marks: ${q.marks} ${q.note?(" • "+q.note):""}`;
+      qBody.innerText = ""; optionsContainer.innerHTML="";
+
+      // render by type
+      if(q.type==="group"){
+        q.items.forEach((it, idx)=>{
+          const container = document.createElement("div");
+          container.style.marginBottom="10px";
+          const label = document.createElement("div");
+          label.className="label-muted";
+          label.innerText = it.sub;
+          container.appendChild(label);
+
+          if(it.type==="mcq"){
+            it.options.forEach((opt, oi)=>{
+              const o = document.createElement("div");
+              o.className="option";
+              o.innerText = opt;
+              o.onclick = ()=> {
+                // record answer
+                student.answers[currentQ][idx] = oi;
+                // refresh highlight
+                showQuestion();
+              };
+              // highlight if selected
+              if(student.answers[currentQ][idx] === oi) o.style.background = "rgba(124,193,255,0.12)";
+              container.appendChild(o);
+            });
+          } else if(it.type==="text"){
+            const inp = document.createElement("input");
+            inp.type="text"; inp.className="inline-input";
+            inp.value = student.answers[currentQ][idx] || "";
+            inp.oninput = (e)=> student.answers[currentQ][idx] = e.target.value;
+            container.appendChild(inp);
+          } else if(it.type==="textpair"){
+            const inp1 = document.createElement("input");
+            inp1.type="text"; inp1.className="inline-input"; inp1.placeholder="1";
+            const inp2 = document.createElement("input");
+            inp2.type="text"; inp2.className="inline-input"; inp2.placeholder="2";
+            const val = student.answers[currentQ][idx] || ["",""];
+            inp1.value = val[0] || "";
+            inp2.value = val[1] || "";
+            inp1.oninput = ()=> {
+              student.answers[currentQ][idx] = [inp1.value, inp2.value];
+            };
+            inp2.oninput = ()=> {
+              student.answers[currentQ][idx] = [inp1.value, inp2.value];
+            };
+            container.appendChild(inp1); container.appendChild(inp2);
+          } else {
+            // default text
+            const inp = document.createElement("input");
+            inp.type="text"; inp.className="inline-input";
+            inp.value = student.answers[currentQ][idx] || "";
+            inp.oninput = (e)=> student.answers[currentQ][idx] = e.target.value;
+            container.appendChild(inp);
+          }
+
+          optionsContainer.appendChild(container);
+        });
+      } else if(q.type==="match"){
+        q.items.forEach((it, idx)=>{
+          const container = document.createElement("div");
+          container.style.marginBottom="10px";
+          const label = document.createElement("div");
+          label.className="label-muted";
+          label.innerText = it.sub;
+          container.appendChild(label);
+          const sel = document.createElement("select");
+          sel.className = "inline-input";
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.innerText = "Choose";
+          sel.appendChild(placeholder);
+          it.options.forEach((opt, oi)=>{
+            const o = document.createElement("option");
+            o.value = oi;
+            o.innerText = opt;
+            sel.appendChild(o);
+          });
+          // set value from student.answers if exists
+          sel.value = student.answers[currentQ][idx] !== null ? student.answers[currentQ][idx] : "";
+          sel.onchange = (e)=>{
+            student.answers[currentQ][idx] = e.target.value === "" ? null : parseInt(e.target.value);
+          };
+          container.appendChild(sel);
+          optionsContainer.appendChild(container);
+        });
+      } else if(q.type==="textarea"){
+        const ta = document.createElement("textarea");
+        ta.value = student.answers[currentQ] || "";
+        ta.oninput = (e)=> student.answers[currentQ] = e.target.value;
+        ta.placeholder = "Write here ...";
+        optionsContainer.appendChild(ta);
+      } else {
+        // fallback: single text
+        const inp = document.createElement("input");
+        inp.type="text"; inp.className="inline-input";
+        inp.value = student.answers[currentQ] || "";
+        inp.oninput = (e)=> student.answers[currentQ] = e.target.value;
+        optionsContainer.appendChild(inp);
+      }
+
+      // start per-question timer
+      perQTimer = setInterval(()=>{
+        perQRemaining--;
+        updatePerQDisplay();
+        if(perQRemaining<=0){
+          clearInterval(perQTimer);
+          // auto next: leave current answer as-is (maybe null)
+          if(currentQ < questions.length -1){
+            currentQ++;
+            showQuestion();
+          } else {
+            finishQuiz();
+          }
+        }
+      },1000);
+    }
+
+    function updatePerQDisplay(){
+      const m = Math.floor(perQRemaining/60).toString().padStart(2,"0");
+      const s = (perQRemaining%60).toString().padStart(2,"0");
+      timeText.innerText = `${m}:${s}`;
+      const perc = (perQRemaining / student.timePerQuestion)*100;
+      document.getElementById("timerCircle").style.strokeDashoffset = 263.894*(1-perc/100);
+    }
+
+    // Navigation
+    prevBtn.onclick = ()=>{
+      if(currentQ>0){
+        clearInterval(perQTimer);
+        currentQ--;
+        showQuestion();
+      }
+    };
+    nextBtn.onclick = ()=>{
+      clearInterval(perQTimer);
+      if(currentQ < questions.length -1){
+        currentQ++;
+        showQuestion();
+      } else {
+        finishQuiz();
+      }
+    };
+
+    saveDraft.onclick = ()=>{
+      // localStorage save (simple)
+      const payload = { student, currentQ, timestamp: new Date().toISOString() };
+      localStorage.setItem("exam_draft", JSON.stringify(payload));
+      alert("Draft saved locally on your device.");
+    };
+
+    // demo button — start immediately with default name
+    demoBtnEl.onclick = ()=>{
+      studentNameInput.value = "Demo Student";
+      startQuiz();
+    };
+
+    endNow.onclick = ()=> {
+      if(confirm("Do you want to end the exam now?")) finishQuiz();
+    };
+
+    // grading logic
+    function gradeAuto(){
+      // returns {score: x, breakdown: [...]}
+      let score = 0;
+      const breakdown = [];
+      questions.forEach((q, qi)=>{
+        const entry = { qid: q.id, title: q.title, max: q.marks, obtained: 0, items: [] };
+        if(q.type==="group"){
+          q.items.forEach((it, idx)=>{
+            const stuAnsArr = student.answers[qi];
+            const stu = stuAnsArr ? stuAnsArr[idx] : null;
+            let ok=false;
+            if(it.type==="mcq"){
+              if(stu !== null && parseInt(stu) === it.keyIndex) ok=true;
+            } else if(it.type==="text"){
+              if(stu !== null){
+                const a = String(stu).trim().toLowerCase();
+                const b = String(it.key).trim().toLowerCase();
+                if(a === b) ok=true;
+              }
+            } else if(it.type==="textpair"){
+              // loose matching: check that both provided and not empty - manual ideally
+              if(Array.isArray(stu) && stu.length>=2 && (stu[0].trim()!=="" || stu[1].trim()!=="")) {
+                const expected = it.key.map(k=>k.toLowerCase());
+                const got0 = (stu[0]||"").trim().toLowerCase();
+                const got1 = (stu[1]||"").trim().toLowerCase();
+                let matchCount = 0;
+                if(expected.includes(got0)) matchCount++;
+                if(expected.includes(got1)) matchCount++;
+                if(matchCount===2) { ok=true; entry.obtained += it.marks; score += it.marks; }
+                else if(matchCount===1){ entry.obtained += it.marks/2; score += it.marks/2; }
+                entry.items.push({sub:it.sub, stu, ok: matchCount>0, marks:it.marks, awarded: (matchCount===2?it.marks:(matchCount===1?it.marks/2:0))});
+                return;
+              }
+            }
+            if(ok){
+              entry.obtained += it.marks;
+              score += it.marks;
+            }
+            entry.items.push({sub: it.sub, stu: stu, ok: ok, marks: it.marks, correct: (it.type==="mcq" ? it.options[it.keyIndex] : it.key)});
+          });
+        } else if(q.type==="match"){
+          q.items.forEach((it, idx)=>{
+            const stuAnsArr = student.answers[qi];
+            const stu = stuAnsArr ? stuAnsArr[idx] : null;
+            if(stu !== null && parseInt(stu) === it.keyIndex){
+              entry.obtained += it.marks;
+              score += it.marks;
+              entry.items.push({sub:it.sub, stu: it.options[stu], ok:true, marks:it.marks, correct: it.options[it.keyIndex]});
+            } else {
+              entry.items.push({sub:it.sub, stu: stu===null?null:it.options[stu], ok:false, marks:it.marks, correct: it.options[it.keyIndex]});
+            }
+          });
+        } else if(q.type==="textarea"){
+          // manual: no automatic scoring
+          entry.items.push({sub:"Answers (manual)", stu: student.answers[qi], ok:null, marks:0});
+        } else {
+          // single text (fallback)
+          const stu = student.answers[qi];
+          if(stu){
+            const a = String(stu).trim().toLowerCase();
+            const b = String(q.key||"").trim().toLowerCase();
+            if(a === b){
+              entry.obtained += q.marks;
+              score += q.marks;
+            }
+            entry.items.push({sub:q.title, stu, ok: a===b, marks:q.marks, correct:q.key});
+          } else {
+            entry.items.push({sub:q.title, stu:null, ok:false, marks:q.marks, correct:q.key});
+          }
+        }
+        // round obtained to 2 decimals
+        entry.obtained = Math.round((entry.obtained + Number.EPSILON) * 100) / 100;
+        breakdown.push(entry);
+      });
+
+      // round score to 2 decimals
+      score = Math.round((score + Number.EPSILON) * 100) / 100;
+      return { score, breakdown };
+    }
+
+    // Finish quiz
+    function finishQuiz(){
+      clearInterval(perQTimer);
+      clearInterval(overallTimer);
+      quizArea.classList.add("hidden");
+      resultsScreen.classList.remove("hidden");
+
+      // grade
+      const { score, breakdown } = gradeAuto();
+
+      // prepare display
+      const totalMarks = questions.reduce((s,q)=>s+q.marks,0);
+      const percent = Math.round((score/totalMarks)*100);
+
+      const scoreSummary = document.getElementById("scoreSummary");
+      scoreSummary.innerHTML = `<div><strong>Student:</strong> ${student.name} — <strong>Level:</strong> ${student.level}</div>
+        <div style="margin-top:6px"><strong>Auto score:</strong> ${score} / ${totalMarks} — (${percent}%)</div>
+        <div class="small-muted" style="margin-top:6px">Note: Some items require manual grading (e.g. writing 4 sentences and the 'two words' item). These are marked as manual below.</div>`;
+
+      // render breakdown
+      resultCards.innerHTML = "";
+      breakdown.forEach((entry, qi)=>{
+        const card = document.createElement("div");
+        card.className = "result-card fade-in";
+        let html = `<div style="font-weight:800;margin-bottom:6px">${questions[qi].section} — ${questions[qi].title} (Max: ${entry.max})</div>`;
+        // if textarea/manual
+        if(questions[qi].type==="textarea"){
+          html += `<div class="ans-row manual"><div class="left">Student answers:<br><pre style="white-space:pre-wrap;color:var(--text);">${ student.answers[qi] || "-" }</pre></div><div>Grading: Manual</div></div>`;
+        } else {
+          entry.items.forEach(it=>{
+            if(it.ok === null){
+              html += `<div class="ans-row manual"><div class="left">${it.sub}<br>Student answer: ${it.stu || "-"}</div><div>Grading: Manual</div></div>`;
+            } else if(it.ok){
+              html += `<div class="ans-row correct"><div class="left">${it.sub}<br>Student answer: ${it.stu || "-"}</div><div>Correct • +${it.marks}</div></div>`;
+            } else {
+              html += `<div class="ans-row wrong"><div class="left">${it.sub}<br>Student answer: ${it.stu || "-"} </div><div>Wrong • Correct: ${it.correct}</div></div>`;
+            }
+          });
+        }
+        html += `<div style="margin-top:8px;font-weight:700">Obtained: ${entry.obtained} / ${entry.max}</div>`;
+        card.innerHTML = html;
+        resultCards.appendChild(card);
+      });
+
+      // Optionally: send to Google Sheets (commented, user can enable)
+      // sendResultsToSheet({name: student.name, level: student.level, score, total: totalMarks, percent, breakdown});
+    }
+
+    // OPTIONAL: function to post results to Google Sheets web app (Apps Script doPost)
+    // To enable: deploy Apps Script Web App (doPost) and paste URL below.
+    function sendResultsToSheet(payload){
+      const url = ""; // put your Web App URL here
+      if(!url) return;
+      fetch(url, {
+        method:"POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      }).then(r=>r.text()).then(t=>{
+        console.log("Sheet response:", t);
+      }).catch(err=>{
+        console.warn("Failed to send to sheet",err);
+      });
+    }
+
+    // start handlers
+    startBtn.onclick = startQuiz;
+    demoBtn.onclick = ()=>{ studentNameInput.value = "Demo Student"; startQuiz(); };
+
+    // keyboard: Enter to go next (except when typing)
+    document.addEventListener('keydown', (e)=>{
+      const active = document.activeElement;
+      if(e.key === "Enter" && (active.tagName !== "INPUT" && active.tagName !== "TEXTAREA" && active.tagName !== "SELECT")){
+        e.preventDefault();
+        if(currentQ < questions.length -1) { nextBtn.click(); } else { finishQuiz(); }
+      }
+    });
+
+  </script>
+</body>
+</html>
